@@ -2,12 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
-let fetch;
-(async() => {
-    const { default: fetchModule } = await
-    import ('node-fetch');
-    fetch = fetchModule;
-})();
+const fetch = require('node-fetch');
 const FormData = require('form-data');
 const path = require('path');
 
@@ -24,7 +19,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-app.post('/convertToText', upload.single('file'), async(req, res) => {
+app.post('/convertToText', upload.single('file'), async (req, res) => {
     const oggFilePath = `./uploads/${req.file.originalname}`;
     const mp3FilePath = `./output/${req.file.originalname.replace(".ogg", ".mp3")}`;
 
@@ -34,7 +29,7 @@ app.post('/convertToText', upload.single('file'), async(req, res) => {
         .audioQuality(96)
         .toFormat("mp3")
         .on('error', error => console.log(`Encoding Error: ${error.message}`))
-        .on('end', async() => {
+        .on('end', async () => {
             console.log('Audio Transcoding succeeded!');
 
             // Upload the mp3 file to AssemblyAI
@@ -77,6 +72,14 @@ app.post('/convertToText', upload.single('file'), async(req, res) => {
             }
         })
         .save(mp3FilePath);
+});
+
+// Serve the React frontend (make sure to build the frontend first)
+app.use(express.static(path.join(__dirname, 'client', 'build')));
+
+// Catch-all route to serve the React app
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
 });
 
 const port = process.env.PORT || 5000;
