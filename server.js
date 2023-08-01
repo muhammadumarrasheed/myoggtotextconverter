@@ -2,7 +2,12 @@ const express = require('express');
 const multer = require('multer');
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
-const fetch = require('node-fetch');
+let fetch;
+(async() => {
+    const { default: fetchModule } = await
+    import ('node-fetch');
+    fetch = fetchModule;
+})();
 const FormData = require('form-data');
 const path = require('path');
 
